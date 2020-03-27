@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -18,7 +19,7 @@ import (
 	"github.com/mat/besticon/besticon/iconserver/assets"
 	"github.com/mat/besticon/lettericon"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	// "github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/rs/cors"
 
@@ -244,22 +245,22 @@ func renderHTMLTemplate(w http.ResponseWriter, httpStatus int, templ *template.T
 }
 
 func startServer(port string, address string) {
-	registerHandler("/", indexHandler)
-	registerHandler("/icons", iconsHandler)
+	// registerHandler("/", indexHandler)
+	// registerHandler("/icons", iconsHandler)
 	registerHandler("/icon", iconHandler)
-	registerHandler("/popular", popularHandler)
-	registerHandler("/allicons.json", alliconsHandler)
-	registerHandler("/lettericons/", lettericonHandler)
+	// registerHandler("/popular", popularHandler)
+	// registerHandler("/allicons.json", alliconsHandler)
+	// registerHandler("/lettericons/", lettericonHandler)
 
-	serveAsset("/pure-0.5.0-min.css", "besticon/iconserver/assets/pure-0.5.0-min.css", oneYear)
-	serveAsset("/grids-responsive-0.5.0-min.css", "besticon/iconserver/assets/grids-responsive-0.5.0-min.css", oneYear)
-	serveAsset("/main-min.css", "besticon/iconserver/assets/main-min.css", oneYear)
+	// serveAsset("/pure-0.5.0-min.css", "besticon/iconserver/assets/pure-0.5.0-min.css", oneYear)
+	// serveAsset("/grids-responsive-0.5.0-min.css", "besticon/iconserver/assets/grids-responsive-0.5.0-min.css", oneYear)
+	// serveAsset("/main-min.css", "besticon/iconserver/assets/main-min.css", oneYear)
 
-	serveAsset("/icon.svg", "besticon/iconserver/assets/icon.svg", oneYear)
-	serveAsset("/favicon.ico", "besticon/iconserver/assets/favicon.ico", oneYear)
-	serveAsset("/apple-touch-icon.png", "besticon/iconserver/assets/apple-touch-icon.png", oneYear)
+	// serveAsset("/icon.svg", "besticon/iconserver/assets/icon.svg", oneYear)
+	// serveAsset("/favicon.ico", "besticon/iconserver/assets/favicon.ico", oneYear)
+	// serveAsset("/apple-touch-icon.png", "besticon/iconserver/assets/apple-touch-icon.png", oneYear)
 
-	http.Handle("/metrics", promhttp.Handler())
+	// http.Handle("/metrics", promhttp.Handler())
 
 	addr := address + ":" + port
 	logger.Print("Starting server on ", addr, "...")
@@ -278,6 +279,7 @@ func proxyWithCacheControl(w http.ResponseWriter, r *http.Request, redirectURL s
 	if os.Getenv("SERVER_MODE") == "download" {
 		response, e := besticon.Get(redirectURL)
 		if e != nil {
+			log.Fatal(e)
 			redirectWithCacheControl(w, r, redirectURL)
 			return
 		}
