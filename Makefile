@@ -82,19 +82,51 @@ github_package: clean build_all_platforms
 	ls -alht iconserver*.zip
 
 ## Docker ##
-docker_build_image:
-	docker build -t matthiasluedtke/iconserver:latest -t matthiasluedtke/iconserver:`cat VERSION` .
+push_to_docker: perform_ecr_login docker_build_image docker_push_image_latest
 
-docker_run:
-	docker run -p 3000:8080 --env-file docker_run.env matthiasluedtke/iconserver:latest
+# prod should always be opinionated.
+push_to_docker_prod: perform_ecr_login_prod docker_build_image_prod docker_push_images_all_prod
+
+## Staging ##
+perform_ecr_login:
+	aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 892481148093.dkr.ecr.us-east-2.amazonaws.com/iconserver
+
+docker_build_image:
+	docker build -t iconserver:latest -t iconserver:`cat VERSION` .
+	docker tag iconserver:latest 892481148093.dkr.ecr.us-east-2.amazonaws.com/iconserver:latest
+	docker tag iconserver:`cat VERSION` 892481148093.dkr.ecr.us-east-2.amazonaws.com/iconserver:`cat VERSION`
+	# docker build -t matthiasluedtke/iconserver:latest -t matthiasluedtke/iconserver:`cat VERSION` .
 
 docker_push_images_all: docker_push_image_latest docker_push_image_version
 
 docker_push_image_latest:
-	docker push matthiasluedtke/iconserver:latest
+	docker push 892481148093.dkr.ecr.us-east-2.amazonaws.com/iconserver:latest
 
 docker_push_image_version:
-	docker push matthiasluedtke/iconserver:`cat VERSION`
+	docker push 892481148093.dkr.ecr.us-east-2.amazonaws.com/iconserver:`cat VERSION`
+
+## Production ##
+perform_ecr_login_prod:
+	aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 892481148093.dkr.ecr.ap-south-1.amazonaws.com/iconserver
+	
+docker_build_image_prod:
+	docker build -t iconserver:latest -t iconserver:`cat VERSION` .
+	docker tag iconserver:latest 892481148093.dkr.ecr.ap-south-1.amazonaws.com/iconserver:latest
+	docker tag iconserver:`cat VERSION` 892481148093.dkr.ecr.ap-south-1.amazonaws.com/iconserver:`cat VERSION`
+	# docker build -t matthiasluedtke/iconserver:latest -t matthiasluedtke/iconserver:`cat VERSION` .
+
+docker_push_images_all_prod: docker_push_image_latest_prod docker_push_image_version_prod
+
+docker_push_image_latest_prod:
+	docker push 892481148093.dkr.ecr.ap-south-1.amazonaws.com/iconserver:latest
+
+docker_push_image_version_prod:
+	docker push 892481148093.dkr.ecr.ap-south-1.amazonaws.com/iconserver:`cat VERSION`
+
+# Other docker commands
+
+docker_run:
+	docker run -p 3000:8080 --env-file docker_run.env matthiasluedtke/iconserver:latest
 
 new_release: bump_version rewrite-version.go git_tag_version
 
